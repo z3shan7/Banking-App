@@ -1,8 +1,8 @@
 'use strict';
 
 /////////////////////////////////////////////////
-/////////////////////////////////////////////////
 // BANKIST APP
+/////////////////////////////////////////////////
 
 // Data
 const account1 = {
@@ -94,9 +94,9 @@ const calcDisplaySummary = function (acc) {
 }
 // calcDisplaySummary(account1.movements)
 
-const calcDisplayBalance = (movements) => {
-  const balance = movements.reduce((acc, mov) => acc + mov, 0)
-  labelBalance.textContent = `${balance}€`
+const calcDisplayBalance = (acc) => {
+  acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0)
+  labelBalance.textContent = `${acc.balance}€`
 }
 // calcDisplayBalance(account1.movements)
 
@@ -110,6 +110,17 @@ const createUsernames = function (accs) {
   })
 }
 createUsernames(accounts)
+
+const updateUI = function (acc) {
+  // Display movements
+  displayMovments(acc.movements);
+
+  // Display balance
+  calcDisplayBalance(acc);
+
+  // Display summary
+  calcDisplaySummary(acc);
+};
 
 //  event handler
 
@@ -133,19 +144,57 @@ btnLogin.addEventListener('click', (e) => {
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur()
 
-    // Display movments
-    displayMovments(currentAccount.movements)
-
-    // Display balance
-    calcDisplayBalance(currentAccount.movements)
-
-    // Display summary
-    calcDisplaySummary(currentAccount)
+    // Update UI
+    updateUI(currentAccount);
   }
 
-
-
 })
+btnTransfer.addEventListener('click', function (e) {
+  e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  const receiverAcc = accounts.find(
+    acc => acc.username === inputTransferTo.value
+  );
+  inputTransferAmount.value = inputTransferTo.value = '';
+
+  if (
+    amount > 0 &&
+    receiverAcc &&
+    currentAccount.balance >= amount &&
+    receiverAcc?.username !== currentAccount.username
+  ) {
+    // Doing the transfer
+    currentAccount.movements.push(-amount);
+    receiverAcc.movements.push(amount);
+
+    // Update UI
+    updateUI(currentAccount);
+  }
+});
+
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  if (
+    inputCloseUsername.value === currentAccount.username &&
+    Number(inputClosePin.value) === currentAccount.pin
+  ) {
+    const index = accounts.findIndex(
+      acc => acc.username === currentAccount.username
+    );
+    console.log(index);
+    // .indexOf(23)
+
+    // Delete account
+    accounts.splice(index, 1);
+
+    // Hide UI
+    containerApp.style.opacity = 0;
+  }
+
+  inputCloseUsername.value = inputClosePin.value = '';
+});
+
 
 
 /////////////////////////////////////////////////
